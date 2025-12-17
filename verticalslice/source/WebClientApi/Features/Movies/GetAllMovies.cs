@@ -4,20 +4,9 @@ using WebClientApi.Data;
 
 namespace WebClientApi.Features.Movies;
 
-public static class GetAllMovies
+public static partial class GetAllMovies
 {
     public record Query : IRequest<List<MovieDto>>;
-
-    public record MovieDto(
-        int Id,
-        string Title,
-        string? Director,
-        int? ReleaseYear,
-        string? Genre,
-        decimal? Rating,
-        string? Description,
-        DateTime CreatedAt
-    );
 
     public class Handler : IRequestHandler<Query, List<MovieDto>>
     {
@@ -40,7 +29,8 @@ public static class GetAllMovies
                     m.Genre,
                     m.Rating,
                     m.Description,
-                    m.CreatedAt
+                    m.CreatedAt,
+                    m.UpdatedAt
                 ))
                 .ToListAsync(cancellationToken);
 

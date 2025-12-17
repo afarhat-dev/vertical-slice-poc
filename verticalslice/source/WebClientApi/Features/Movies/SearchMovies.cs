@@ -14,16 +14,7 @@ public static class SearchMovies
         int? MaxYear,
         decimal? MinRating
     ) : IRequest<List<MovieDto>>;
-
-    public record MovieDto(
-        int Id,
-        string Title,
-        string? Director,
-        int? ReleaseYear,
-        string? Genre,
-        decimal? Rating,
-        string? Description
-    );
+ 
 
     public class Handler : IRequestHandler<Query, List<MovieDto>>
     {
@@ -77,7 +68,9 @@ public static class SearchMovies
                     m.ReleaseYear,
                     m.Genre,
                     m.Rating,
-                    m.Description
+                    m.Description,
+                    m.CreatedAt,
+                    m.UpdatedAt
                 ))
                 .ToListAsync(cancellationToken);
 

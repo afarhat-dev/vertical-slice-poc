@@ -6,11 +6,11 @@ namespace WebClientApi.Features.Movies;
 
 public static class DeleteMovie
 {
-    public record Command(int Id) : IRequest<Result>;
+    public record Command(int Id) : IRequest<DeleteResult>;
 
-    public record Result(bool Success, string Message);
+    public record DeleteResult(bool Success, string Message);
 
-    public class Handler : IRequestHandler<Command, Result>
+    public class Handler : IRequestHandler<Command, DeleteResult>
     {
         private readonly MovieDbContext _context;
 
@@ -19,20 +19,20 @@ public static class DeleteMovie
             _context = context;
         }
 
-        public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<DeleteResult> Handle(Command request, CancellationToken cancellationToken)
         {
             var movie = await _context.Movies
                 .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
 
             if (movie == null)
             {
-                return new Result(false, $"Movie with Id {request.Id} not found");
+                return new DeleteResult(false, $"Movie with Id {request.Id} not found");
             }
 
             _context.Movies.Remove(movie);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return new Result(true, "Movie deleted successfully");
+            return new DeleteResult(true, "Movie deleted successfully");
         }
     }
 }

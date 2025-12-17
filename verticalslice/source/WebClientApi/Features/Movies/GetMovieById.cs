@@ -8,17 +8,6 @@ public static class GetMovieById
 {
     public record Query(int Id) : IRequest<MovieDto?>;
 
-    public record MovieDto(
-        int Id,
-        string Title,
-        string? Director,
-        int? ReleaseYear,
-        string? Genre,
-        decimal? Rating,
-        string? Description,
-        DateTime CreatedAt,
-        DateTime? UpdatedAt
-    );
 
     public class Handler : IRequestHandler<Query, MovieDto?>
     {

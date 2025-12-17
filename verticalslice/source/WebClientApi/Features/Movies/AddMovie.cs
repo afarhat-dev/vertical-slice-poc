@@ -6,18 +6,18 @@ namespace WebClientApi.Features.Movies;
 
 public static class AddMovie
 {
-    public record Command(
+    public record AddCommand(
         string Title,
         string? Director,
         int? ReleaseYear,
         string? Genre,
         decimal? Rating,
         string? Description
-    ) : IRequest<Result>;
+    ) : IRequest<AddResult>;
 
-    public record Result(int Id, string Title, string Message);
+    public record AddResult(int Id, string Title, string Message);
 
-    public class Validator : AbstractValidator<Command>
+    public class Validator : AbstractValidator<AddCommand>
     {
         public Validator()
         {
@@ -49,18 +49,18 @@ public static class AddMovie
         }
     }
 
-    public class Handler : IRequestHandler<Command, Result>
+    public class Handler : IRequestHandler<AddCommand, AddResult>
     {
         private readonly MovieDbContext _context;
-        private readonly IValidator<Command> _validator;
+        private readonly IValidator<AddCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<Command> validator)
+        public Handler(MovieDbContext context, IValidator<AddCommand> validator)
         {
             _context = context;
             _validator = validator;
         }
 
-        public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<AddResult> Handle(AddCommand request, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
@@ -82,7 +82,7 @@ public static class AddMovie
             _context.Movies.Add(movie);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return new Result(movie.Id, movie.Title, "Movie added successfully");
+            return new AddResult(movie.Id, movie.Title, "Movie added successfully");
         }
     }
 }

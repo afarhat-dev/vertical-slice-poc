@@ -2,6 +2,8 @@ using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using WebClientApi.Data;
 using WebClientApi.Features.Movies;
+using static WebClientApi.Features.Movies.AddMovie;
+using static WebClientApi.Features.Movies.UpdateMovie;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,19 +17,23 @@ builder.Services.AddDbContext<MovieDbContext>(options =>
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 // Add FluentValidation validators
-builder.Services.AddScoped<IValidator<AddMovie.Command>, AddMovie.Validator>();
-builder.Services.AddScoped<IValidator<UpdateMovie.Command>, UpdateMovie.Validator>();
+builder.Services.AddScoped<IValidator<AddCommand>, AddMovie.Validator>();
+builder.Services.AddScoped<IValidator<UpdateCommand>, UpdateMovie.Validator>();
 
 builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();

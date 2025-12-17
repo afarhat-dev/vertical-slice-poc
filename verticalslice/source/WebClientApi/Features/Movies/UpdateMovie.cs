@@ -7,7 +7,7 @@ namespace WebClientApi.Features.Movies;
 
 public static class UpdateMovie
 {
-    public record Command(
+    public record UpdateCommand(
         int Id,
         string Title,
         string? Director,
@@ -15,11 +15,11 @@ public static class UpdateMovie
         string? Genre,
         decimal? Rating,
         string? Description
-    ) : IRequest<Result>;
+    ) : IRequest<UpdateResult>;
 
-    public record Result(bool Success, string Message);
+    public record UpdateResult(bool Success, string Message);
 
-    public class Validator : AbstractValidator<Command>
+    public class Validator : AbstractValidator<UpdateCommand>
     {
         public Validator()
         {
@@ -54,18 +54,18 @@ public static class UpdateMovie
         }
     }
 
-    public class Handler : IRequestHandler<Command, Result>
+    public class Handler : IRequestHandler<UpdateCommand, UpdateResult>
     {
         private readonly MovieDbContext _context;
-        private readonly IValidator<Command> _validator;
+        private readonly IValidator<UpdateCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<Command> validator)
+        public Handler(MovieDbContext context, IValidator<UpdateCommand> validator)
         {
             _context = context;
             _validator = validator;
         }
 
-        public async Task<Result> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<UpdateResult> Handle(UpdateCommand request, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
@@ -78,7 +78,7 @@ public static class UpdateMovie
 
             if (movie == null)
             {
-                return new Result(false, $"Movie with Id {request.Id} not found");
+                return new UpdateResult(false, $"Movie with Id {request.Id} not found");
             }
 
             movie.Title = request.Title;
@@ -91,7 +91,7 @@ public static class UpdateMovie
 
             await _context.SaveChangesAsync(cancellationToken);
 
-            return new Result(true, "Movie updated successfully");
+            return new UpdateResult(true, "Movie updated successfully");
         }
     }
 }
