@@ -1,0 +1,50 @@
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using WebClientApi.Data;
+
+namespace WebClientApi.Features.Movies;
+
+public static class GetAllMovies
+{
+    public record Query : IRequest<List<MovieDto>>;
+
+    public record MovieDto(
+        int Id,
+        string Title,
+        string? Director,
+        int? ReleaseYear,
+        string? Genre,
+        decimal? Rating,
+        string? Description,
+        DateTime CreatedAt
+    );
+
+    public class Handler : IRequestHandler<Query, List<MovieDto>>
+    {
+        private readonly MovieDbContext _context;
+
+        public Handler(MovieDbContext context)
+        {
+            _context = context;
+        }
+
+        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken)
+        {
+            var movies = await _context.Movies
+                .OrderByDescending(m => m.CreatedAt)
+                .Select(m => new MovieDto(
+                    m.Id,
+                    m.Title,
+                    m.Director,
+                    m.ReleaseYear,
+                    m.Genre,
+                    m.Rating,
+                    m.Description,
+                    m.CreatedAt
+                ))
+                .ToListAsync(cancellationToken);
+
+            return movies;
+        }
+    }
+}
