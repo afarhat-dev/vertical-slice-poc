@@ -10,7 +10,7 @@ namespace WebClientApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class MoviesController : ControllerBase
+public partial class MoviesController : ControllerBase
 {
     private readonly IMediator _mediator;
     private readonly ILogger<MoviesController> _logger;
@@ -154,24 +154,4 @@ public class MoviesController : ControllerBase
 
         return Ok(result);
     }
-
-    //TODO: Should be in contract folder
-    public record AddMovieRequest(
-        string Title,
-        string? Director,
-        int? ReleaseYear,
-        string? Genre,
-        decimal? Rating,
-        string? Description
-    );
-
-    //TODO: Should be in contract folder
-    public record UpdateMovieRequest(
-        string Title,
-        string? Director,
-        int? ReleaseYear,
-        string? Genre,
-        decimal? Rating,
-        string? Description
-    );
 }
