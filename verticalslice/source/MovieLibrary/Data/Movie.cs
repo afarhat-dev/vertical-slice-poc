@@ -1,3 +1,5 @@
+using System;
+
 namespace MovieLibrary.Data;
 
 public class Movie
