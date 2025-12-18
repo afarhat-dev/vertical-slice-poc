@@ -81,7 +81,7 @@ public partial class MoviesController : ControllerBase
         try
         {
             var command = new AddCommand(
-                request.Title,
+                request.Title??"",
                 request.Director,
                 request.ReleaseYear,
                 request.Genre,
@@ -112,7 +112,7 @@ public partial class MoviesController : ControllerBase
         {
             var command = new UpdateCommand(
                 id,
-                request.Title,
+                request.Title??"",
                 request.Director,
                 request.ReleaseYear,
                 request.Genre,
