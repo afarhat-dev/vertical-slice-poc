@@ -1,4 +1,4 @@
-namespace WebClientApi.Features.Movies;
+namespace MovieLibrary.Features.Movies;
 
 
 public class MovieDto(

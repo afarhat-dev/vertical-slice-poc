@@ -1,9 +1,9 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using WebClientApi.Data;
+using MovieLibrary.Data;
 
-namespace WebClientApi.Features.Movies;
+namespace MovieLibrary.Features.Movies;
 
 public static class UpdateMovie
 {

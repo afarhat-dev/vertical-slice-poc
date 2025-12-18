@@ -1,8 +1,8 @@
 using FluentValidation;
 using MediatR;
-using WebClientApi.Data;
+using MovieLibrary.Data;
 
-namespace WebClientApi.Features.Movies;
+namespace MovieLibrary.Features.Movies;
 
 public static class AddMovie
 {

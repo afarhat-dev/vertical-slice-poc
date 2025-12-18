@@ -1,9 +1,10 @@
-namespace WebClientApi.Controllers;
+namespace MovieLibrary.Controllers;
 
 
-public class AddMovieRequest
-{    
-    public AddMovieRequest(string? title, string? director, int? releaseYear, string? genre, decimal? rating, string? description)
+    //TODO: Should be in contract folder
+public class UpdateMovieRequest
+{
+    public UpdateMovieRequest(string? title, string? director, int? releaseYear, string? genre, decimal? rating, string? description)
     {
         this._title = title;
         this._director = director;
@@ -27,5 +28,6 @@ public class AddMovieRequest
     public decimal? Rating { get => _rating; set => _rating = value; }
     public string? Description { get => _description; set => _description = value; }
 }
+
 
 
