@@ -1,9 +1,9 @@
 using FluentValidation;
 using Microsoft.EntityFrameworkCore;
-using WebClientApi.Data;
-using WebClientApi.Features.Movies;
-using static WebClientApi.Features.Movies.AddMovie;
-using static WebClientApi.Features.Movies.UpdateMovie;
+using MovieLibrary.Data;
+using MovieLibrary.Features.Movies;
+using static MovieLibrary.Features.Movies.AddMovie;
+using static MovieLibrary.Features.Movies.UpdateMovie;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,8 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<MovieDbContext>(options =>
     options.UseInMemoryDatabase("MovieLibraryDb"));
 
-// Add MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
+// Add MediatR - Register handlers from MovieLibrary
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MovieDbContext).Assembly));
 
 // Add FluentValidation validators
 builder.Services.AddScoped<IValidator<AddCommand>, AddMovie.Validator>();

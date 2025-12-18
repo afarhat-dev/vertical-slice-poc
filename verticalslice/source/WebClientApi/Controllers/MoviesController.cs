@@ -1,10 +1,12 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using WebClientApi.Features.Movies;
-using static WebClientApi.Features.Movies.AddMovie;
-using static WebClientApi.Features.Movies.DeleteMovie;
-using static WebClientApi.Features.Movies.UpdateMovie;
+using MovieLibrary.Controllers;
+using MovieLibrary.Features.Movies;
+using static MovieLibrary.Features.Movies.AddMovie;
+using static MovieLibrary.Features.Movies.DeleteMovie;
+using static MovieLibrary.Features.Movies.UpdateMovie;
+
 
 namespace WebClientApi.Controllers;
 

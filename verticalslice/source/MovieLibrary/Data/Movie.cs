@@ -1,4 +1,6 @@
-namespace WebClientApi.Data;
+using System;
+
+namespace MovieLibrary.Data;
 
 public class Movie
 {

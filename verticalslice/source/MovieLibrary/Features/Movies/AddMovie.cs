@@ -1,31 +1,29 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using WebClientApi.Data;
+using MovieLibrary.Data;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace WebClientApi.Features.Movies;
+namespace MovieLibrary.Features.Movies;
 
-public static class UpdateMovie
+public static class AddMovie
 {
-    public record UpdateCommand(
-        int Id,
+    public record AddCommand(
         string Title,
         string? Director,
         int? ReleaseYear,
         string? Genre,
         decimal? Rating,
         string? Description
-    ) : IRequest<UpdateResult>;
+    ) : IRequest<AddResult>;
 
-    public record UpdateResult(bool Success, string Message);
+    public record AddResult(int Id, string Title, string Message);
 
-    public class Validator : AbstractValidator<UpdateCommand>
+    public class Validator : AbstractValidator<AddCommand>
     {
         public Validator()
         {
-            RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Id must be greater than 0");
-
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title is required")
                 .MaximumLength(200).WithMessage("Title cannot exceed 200 characters");
@@ -54,18 +52,18 @@ public static class UpdateMovie
         }
     }
 
-    public class Handler : IRequestHandler<UpdateCommand, UpdateResult>
+    public class Handler : IRequestHandler<AddCommand, AddResult>
     {
         private readonly MovieDbContext _context;
-        private readonly IValidator<UpdateCommand> _validator;
+        private readonly IValidator<AddCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<UpdateCommand> validator)
+        public Handler(MovieDbContext context, IValidator<AddCommand> validator)
         {
             _context = context;
             _validator = validator;
         }
 
-        public async Task<UpdateResult> Handle(UpdateCommand request, CancellationToken cancellationToken)
+        public async Task<AddResult> Handle(AddCommand request, CancellationToken cancellationToken)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
@@ -73,25 +71,21 @@ public static class UpdateMovie
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
-
-            if (movie == null)
+            var movie = new Movie
             {
-                return new UpdateResult(false, $"Movie with Id {request.Id} not found");
-            }
+                Title = request.Title,
+                Director = request.Director,
+                ReleaseYear = request.ReleaseYear,
+                Genre = request.Genre,
+                Rating = request.Rating,
+                Description = request.Description,
+                CreatedAt = DateTime.UtcNow
+            };
 
-            movie.Title = request.Title;
-            movie.Director = request.Director;
-            movie.ReleaseYear = request.ReleaseYear;
-            movie.Genre = request.Genre;
-            movie.Rating = request.Rating;
-            movie.Description = request.Description;
-            movie.UpdatedAt = DateTime.UtcNow;
-
+            _context.Movies.Add(movie);
             await _context.SaveChangesAsync(cancellationToken);
 
-            return new UpdateResult(true, "Movie updated successfully");
+            return new AddResult(movie.Id, movie.Title, "Movie added successfully");
         }
     }
 }

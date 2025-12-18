@@ -1,4 +1,4 @@
-namespace WebClientApi.Controllers;
+namespace MovieLibrary.Controllers;
 
 
 public class AddMovieRequest

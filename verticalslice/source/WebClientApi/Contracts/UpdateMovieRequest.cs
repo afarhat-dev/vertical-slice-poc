@@ -1,4 +1,4 @@
-namespace WebClientApi.Controllers;
+namespace MovieLibrary.Controllers;
 
 
     //TODO: Should be in contract folder
