@@ -4,7 +4,7 @@ namespace MovieLibrary.Features.Movies;
 
 
 public class MovieDto(
-        int _Id,
+        Guid _Id,
         string _Title,
         string? _Director,
         int? _ReleaseYear,
@@ -15,7 +15,7 @@ public class MovieDto(
         DateTime? _UpdatedAt
 )
 {
-    public int Id { get; set; } = _Id;
+    public Guid Id { get; set; } = _Id;
     public string Title { get; set; } = _Title;
     public string? Director { get; set; } = _Director;
     public int? ReleaseYear { get; set; } = _ReleaseYear;

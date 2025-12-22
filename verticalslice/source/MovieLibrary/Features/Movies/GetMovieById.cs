@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,7 +10,7 @@ namespace MovieLibrary.Features.Movies;
 
 public static class GetMovieById
 {
-    public record Query(int Id) : IRequest<MovieDto?>;
+    public record Query(Guid Id) : IRequest<MovieDto?>;
 
 
     public class Handler : IRequestHandler<Query, MovieDto?>

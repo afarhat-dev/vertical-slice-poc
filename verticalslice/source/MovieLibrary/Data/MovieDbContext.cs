@@ -22,6 +22,7 @@ public class MovieDbContext : DbContext
             entity.Property(e => e.Genre).HasMaxLength(50);
             entity.Property(e => e.Rating).HasPrecision(3, 1);
             entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.RowVersion).IsRequired().IsRowVersion();
         });
     }
 }

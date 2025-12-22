@@ -18,7 +18,7 @@ public static class AddMovie
         string? Description
     ) : IRequest<AddResult>;
 
-    public record AddResult(int Id, string Title, string Message);
+    public record AddResult(Guid Id, string Title, string Message);
 
     public class Validator : AbstractValidator<AddCommand>
     {

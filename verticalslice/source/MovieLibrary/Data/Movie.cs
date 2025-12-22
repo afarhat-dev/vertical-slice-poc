@@ -1,10 +1,11 @@
 using System;
+using System.Data;
 
 namespace MovieLibrary.Data;
 
 public class Movie
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     public required string Title { get; set; }
     public string? Director { get; set; }
     public int? ReleaseYear { get; set; }
@@ -13,4 +14,5 @@ public class Movie
     public string? Description { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
+    public DataRowVersion RowVersion { get; set; }
 }

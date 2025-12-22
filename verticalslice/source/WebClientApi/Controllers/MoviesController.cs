@@ -41,7 +41,7 @@ public partial class MoviesController : ControllerBase
     [HttpGet("{id}", Name = "GetById")]
     [ProducesResponseType(typeof(MovieDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<MovieDto>> GetById(int id)
+    public async Task<ActionResult<MovieDto>> GetById(Guid id)
     {
         var query = new GetMovieById.Query(id);
         var result = await _mediator.Send(query);
@@ -108,7 +108,7 @@ public partial class MoviesController : ControllerBase
     [ProducesResponseType(typeof(UpdateResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<UpdateResult>> Update(int id, [FromBody] UpdateMovieRequest request)
+    public async Task<ActionResult<UpdateResult>> Update(Guid id, [FromBody] UpdateMovieRequest request)
     {
         try
         {
@@ -144,7 +144,7 @@ public partial class MoviesController : ControllerBase
     [HttpDelete("{id}")]
     [ProducesResponseType(typeof(DeleteResult), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<DeleteResult>> Delete(int id)
+    public async Task<ActionResult<DeleteResult>> Delete(Guid id)
     {
         var command = new DeleteMovie.Command(id);
         var result = await _mediator.Send(command);

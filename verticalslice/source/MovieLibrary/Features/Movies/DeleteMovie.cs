@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -8,7 +9,7 @@ namespace MovieLibrary.Features.Movies;
 
 public static class DeleteMovie
 {
-    public record Command(int Id) : IRequest<DeleteResult>;
+    public record Command(Guid Id) : IRequest<DeleteResult>;
 
     public record DeleteResult(bool Success, string Message);
 

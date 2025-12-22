@@ -11,7 +11,7 @@ namespace MovieLibrary.Features.Movies;
 public static class UpdateMovie
 {
     public record UpdateCommand(
-        int Id,
+        Guid Id,
         string Title,
         string? Director,
         int? ReleaseYear,
@@ -26,8 +26,8 @@ public static class UpdateMovie
     {
         public Validator()
         {
-            RuleFor(x => x.Id)
-                .GreaterThan(0).WithMessage("Id must be greater than 0");
+            RuleFor(x => x.Id).NotEmpty()
+                .WithMessage("Id is required");
 
             RuleFor(x => x.Title)
                 .NotEmpty().WithMessage("Title is required")
