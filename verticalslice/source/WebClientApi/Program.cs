@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
 using MovieLibrary.Features.Movies;
 using MovieLibrary.Features.Rentals;
-using MovieLibrary.Migrations;
 using static MovieLibrary.Features.Movies.AddMovie;
 using static MovieLibrary.Features.Movies.UpdateMovie;
 using static MovieLibrary.Features.Rentals.CreateRental;
@@ -25,8 +24,6 @@ builder.Services.AddScoped<IValidator<CreateRental.CreateRentalCommand>, CreateR
 builder.Services.AddScoped<IValidator<ReturnRental.Command>, ReturnRental.Validator>();
 
 builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();

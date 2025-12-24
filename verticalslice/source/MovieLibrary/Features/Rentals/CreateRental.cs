@@ -1,5 +1,6 @@
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
 using System;
 using System.Threading;
@@ -20,17 +21,28 @@ public static class CreateRental
 
     public class Validator : AbstractValidator<CreateRentalCommand>
     {
-        public Validator()
+        private readonly MovieDbContext _context;
+
+        public Validator(MovieDbContext context)
         {
+            _context = context;
+
             RuleFor(x => x.CustomerName)
                 .NotEmpty().WithMessage("Customer name is required")
                 .MaximumLength(200).WithMessage("Customer name cannot exceed 200 characters");
 
             RuleFor(x => x.RentalDate)
-                .NotEmpty().WithMessage("Rental date is required");
+                .NotEmpty().WithMessage("Rental date is required")
+                .LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)).WithMessage("Rental date cannot be more than 1 day in the future")
+                .GreaterThanOrEqualTo(DateTime.UtcNow.AddYears(-1)).WithMessage("Rental date cannot be more than 1 year in the past");
 
             RuleFor(x => x.DailyRate)
                 .GreaterThan(0).WithMessage("Daily rate must be greater than 0");
+
+            RuleFor(x => x.MovieId)
+                .MustAsync(async (movieId, cancellationToken) =>
+                    await _context.Movies.AnyAsync(m => m.Id == movieId, cancellationToken))
+                .WithMessage("Movie with the specified ID does not exist");
         }
     }
 
@@ -53,13 +65,23 @@ public static class CreateRental
                 throw new ValidationException(validationResult.Errors);
             }
 
+            // Fetch the movie to get its title
+            var movie = await _context.Movies
+                .FirstOrDefaultAsync(m => m.Id == request.MovieId, cancellationToken);
+
+            if (movie == null)
+            {
+                throw new InvalidOperationException("Movie not found");
+            }
+
             var rental = new Rental
             {
                 CustomerName = request.CustomerName,
                 MovieId = request.MovieId,
+                ItemName = movie.Title,
                 RentalDate = request.RentalDate,
                 DailyRate = request.DailyRate,
-                Status = "Active"
+                Status = RentalStatus.Active
             };
 
             _context.Rentals.Add(rental);

@@ -39,6 +39,12 @@ public class MovieDbContext : DbContext
             entity.Property(e => e.DailyRate).HasPrecision(18, 2);
             entity.Property(e => e.Status).IsRequired().HasMaxLength(50);
             entity.Property(e => e.RowVersion).IsRequired().IsRowVersion();
+
+            // Configure foreign key relationship
+            entity.HasOne(e => e.Movie)
+                .WithMany()
+                .HasForeignKey(e => e.MovieId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

@@ -27,9 +27,10 @@ public static class ReturnRental
     public class Validator : AbstractValidator<Command>
     {
         public Validator()
-        {           
+        {
             RuleFor(x => x.ReturnDate)
-                .NotEmpty().WithMessage("Return date is required");
+                .NotEmpty().WithMessage("Return date is required")
+                .LessThanOrEqualTo(DateTime.UtcNow.AddDays(1)).WithMessage("Return date cannot be more than 1 day in the future");
         }
     }
 
@@ -58,8 +59,20 @@ public static class ReturnRental
             if (rental is null)
                 return null;
 
+            // Check if rental is already returned
+            if (rental.Status == RentalStatus.Returned)
+            {
+                throw new InvalidOperationException("This rental has already been returned");
+            }
+
+            // Validate return date is not before rental date
+            if (request.ReturnDate < rental.RentalDate)
+            {
+                throw new ValidationException("Return date cannot be before rental date");
+            }
+
             rental.ReturnDate = request.ReturnDate;
-            rental.Status = "Returned";
+            rental.Status = RentalStatus.Returned;
 
             await _context.SaveChangesAsync(cancellationToken);
 
