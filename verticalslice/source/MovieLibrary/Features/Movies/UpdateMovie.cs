@@ -17,7 +17,8 @@ public static class UpdateMovie
         int? ReleaseYear,
         string? Genre,
         decimal? Rating,
-        string? Description
+        string? Description,
+        byte[] RowVersion
     ) : IRequest<UpdateResult>;
 
     public record UpdateResult(bool Success, string Message);
@@ -84,7 +85,8 @@ public static class UpdateMovie
                 ReleaseYear = request.ReleaseYear,
                 Genre = request.Genre,
                 Rating = request.Rating,
-                Description = request.Description
+                Description = request.Description,
+                RowVersion = request.RowVersion
             };
 
             var success = await _repository.UpdateAsync(movie, cancellationToken);

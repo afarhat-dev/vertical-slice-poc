@@ -8,4 +8,6 @@ public class BaseDto(Guid _Id)
         get { return _Id; }
         set { _Id = value; }
     }
+
+    public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 }

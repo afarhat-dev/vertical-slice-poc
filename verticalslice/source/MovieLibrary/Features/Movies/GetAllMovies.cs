@@ -34,7 +34,7 @@ public static partial class GetAllMovies
                 m.Description,
                 m.CreatedAt,
                 m.UpdatedAt
-            )).ToList();
+            ) { RowVersion = m.RowVersion }).ToList();
         }
     }
 }

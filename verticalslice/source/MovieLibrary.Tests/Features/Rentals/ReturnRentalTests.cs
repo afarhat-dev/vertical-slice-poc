@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using MovieLibrary.Data;
 using MovieLibrary.Features.Rentals;
@@ -34,7 +35,7 @@ public class ReturnRentalTests
         var returnDate = DateTime.UtcNow;
         var dailyRate = 3.99m;
 
-        var command = new ReturnRental.Command(rentalId, returnDate);
+        var command = new ReturnRental.Command(rentalId, returnDate, new byte[] { 1, 2, 3, 4 });
 
         var rental = new Rental
         {
@@ -44,7 +45,8 @@ public class ReturnRentalTests
             ItemName = "The Matrix",
             RentalDate = rentalDate,
             DailyRate = dailyRate,
-            Status = RentalStatus.Active
+            Status = RentalStatus.Active,
+            RowVersion = new byte[] { 1, 2, 3, 4 }
         };
 
         _mockValidator
@@ -52,7 +54,7 @@ public class ReturnRentalTests
             .ReturnsAsync(new ValidationResult());
 
         _mockRepository
-            .Setup(r => r.GetByIdAsync(rentalId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsNoTrackingAsync(rentalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(rental);
 
         _mockRepository
@@ -88,7 +90,7 @@ public class ReturnRentalTests
         var returnDate = DateTime.UtcNow;
         var dailyRate = 3.99m;
 
-        var command = new ReturnRental.Command(rentalId, returnDate);
+        var command = new ReturnRental.Command(rentalId, returnDate, new byte[] { 1, 2, 3, 4 });
 
         var rental = new Rental
         {
@@ -98,7 +100,8 @@ public class ReturnRentalTests
             ItemName = "The Matrix",
             RentalDate = rentalDate,
             DailyRate = dailyRate,
-            Status = RentalStatus.Active
+            Status = RentalStatus.Active,
+            RowVersion = new byte[] { 1, 2, 3, 4 }
         };
 
         _mockValidator
@@ -106,7 +109,7 @@ public class ReturnRentalTests
             .ReturnsAsync(new ValidationResult());
 
         _mockRepository
-            .Setup(r => r.GetByIdAsync(rentalId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsNoTrackingAsync(rentalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(rental);
 
         _mockRepository
@@ -125,14 +128,14 @@ public class ReturnRentalTests
     public async Task Handle_RentalNotFound_ReturnsNull()
     {
         // Arrange
-        var command = new ReturnRental.Command(Guid.NewGuid(), DateTime.UtcNow);
+        var command = new ReturnRental.Command(Guid.NewGuid(), DateTime.UtcNow, new byte[] { 1, 2, 3, 4 });
 
         _mockValidator
             .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult());
 
         _mockRepository
-            .Setup(r => r.GetByIdAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsNoTrackingAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Rental?)null);
 
         // Act
@@ -147,7 +150,7 @@ public class ReturnRentalTests
     {
         // Arrange
         var rentalId = Guid.NewGuid();
-        var command = new ReturnRental.Command(rentalId, DateTime.UtcNow);
+        var command = new ReturnRental.Command(rentalId, DateTime.UtcNow, new byte[] { 1, 2, 3, 4 });
 
         var rental = new Rental
         {
@@ -158,7 +161,8 @@ public class ReturnRentalTests
             RentalDate = DateTime.UtcNow.AddDays(-5),
             ReturnDate = DateTime.UtcNow.AddDays(-1),
             DailyRate = 3.99m,
-            Status = RentalStatus.Returned
+            Status = RentalStatus.Returned,
+            RowVersion = new byte[] { 1, 2, 3, 4 }
         };
 
         _mockValidator
@@ -166,7 +170,7 @@ public class ReturnRentalTests
             .ReturnsAsync(new ValidationResult());
 
         _mockRepository
-            .Setup(r => r.GetByIdAsync(rentalId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsNoTrackingAsync(rentalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(rental);
 
         // Act & Assert
@@ -182,7 +186,7 @@ public class ReturnRentalTests
         var rentalDate = DateTime.UtcNow;
         var returnDate = DateTime.UtcNow.AddDays(-1);
 
-        var command = new ReturnRental.Command(rentalId, returnDate);
+        var command = new ReturnRental.Command(rentalId, returnDate, new byte[] { 1, 2, 3, 4 });
 
         var rental = new Rental
         {
@@ -192,7 +196,8 @@ public class ReturnRentalTests
             ItemName = "The Matrix",
             RentalDate = rentalDate,
             DailyRate = 3.99m,
-            Status = RentalStatus.Active
+            Status = RentalStatus.Active,
+            RowVersion = new byte[] { 1, 2, 3, 4 }
         };
 
         _mockValidator
@@ -200,11 +205,50 @@ public class ReturnRentalTests
             .ReturnsAsync(new ValidationResult());
 
         _mockRepository
-            .Setup(r => r.GetByIdAsync(rentalId, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetByIdAsNoTrackingAsync(rentalId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(rental);
 
         // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
+            _handler.Handle(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_ConcurrentUpdate_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var rentalId = Guid.NewGuid();
+        var rentalDate = DateTime.UtcNow.AddDays(-5);
+        var returnDate = DateTime.UtcNow;
+
+        var command = new ReturnRental.Command(rentalId, returnDate, new byte[] { 1, 2, 3, 4 });
+
+        var rental = new Rental
+        {
+            Id = rentalId,
+            CustomerName = "John Doe",
+            MovieId = Guid.NewGuid(),
+            ItemName = "The Matrix",
+            RentalDate = rentalDate,
+            DailyRate = 3.99m,
+            Status = RentalStatus.Active,
+            RowVersion = new byte[] { 1, 2, 3, 4 }
+        };
+
+        _mockValidator
+            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _mockRepository
+            .Setup(r => r.GetByIdAsNoTrackingAsync(rentalId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(rental);
+
+        _mockRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Rental>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DbUpdateConcurrencyException("Concurrency conflict"));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
             _handler.Handle(command, CancellationToken.None));
     }
 }

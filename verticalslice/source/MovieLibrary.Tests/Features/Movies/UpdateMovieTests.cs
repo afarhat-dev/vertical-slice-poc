@@ -1,6 +1,7 @@
 using FluentAssertions;
 using FluentValidation;
 using FluentValidation.Results;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using MovieLibrary.Data;
 using MovieLibrary.Features.Movies;
@@ -37,7 +38,8 @@ public class UpdateMovieTests
             ReleaseYear: 2003,
             Genre: "Science Fiction",
             Rating: 7.2m,
-            Description: "Updated description"
+            Description: "Updated description",
+            RowVersion: new byte[] { 1, 2, 3, 4 }
         );
 
         _mockValidator
@@ -78,7 +80,8 @@ public class UpdateMovieTests
             ReleaseYear: 2020,
             Genre: "Unknown",
             Rating: 5m,
-            Description: "Does not exist"
+            Description: "Does not exist",
+            RowVersion: new byte[] { 1, 2, 3, 4 }
         );
 
         _mockValidator
@@ -109,7 +112,8 @@ public class UpdateMovieTests
             ReleaseYear: null,
             Genre: null,
             Rating: null,
-            Description: null
+            Description: null,
+            RowVersion: new byte[] { 1, 2, 3, 4 }
         );
 
         var validationFailures = new[]
@@ -123,6 +127,35 @@ public class UpdateMovieTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
+            _handler.Handle(command, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_ConcurrentUpdate_ThrowsDbUpdateConcurrencyException()
+    {
+        // Arrange
+        var movieId = Guid.NewGuid();
+        var command = new UpdateMovie.UpdateCommand(
+            Id: movieId,
+            Title: "The Matrix Reloaded",
+            Director: "The Wachowskis",
+            ReleaseYear: 2003,
+            Genre: "Science Fiction",
+            Rating: 7.2m,
+            Description: "Updated description",
+            RowVersion: new byte[] { 1, 2, 3, 4 }
+        );
+
+        _mockValidator
+            .Setup(v => v.ValidateAsync(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+
+        _mockRepository
+            .Setup(r => r.UpdateAsync(It.IsAny<Movie>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new DbUpdateConcurrencyException("Concurrency conflict"));
+
+        // Act & Assert
+        await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
             _handler.Handle(command, CancellationToken.None));
     }
 }

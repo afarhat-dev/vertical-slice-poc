@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Controllers;
 using MovieLibrary.Features.Movies;
 using static MovieLibrary.Features.Movies.AddMovie;
@@ -119,7 +120,8 @@ public partial class MoviesController : ControllerBase
                 request.ReleaseYear,
                 request.Genre,
                 request.Rating,
-                request.Description
+                request.Description,
+                request.RowVersion
             );
 
             var result = await _mediator.Send(command);
@@ -130,6 +132,10 @@ public partial class MoviesController : ControllerBase
             }
 
             return Ok(result);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { message = "The movie was modified by another user. Please refresh and try again." });
         }
         catch (ValidationException ex)
         {

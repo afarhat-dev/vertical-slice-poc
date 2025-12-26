@@ -9,5 +9,6 @@ public record RentalDto(
     DateTime RentalDate,
     DateTime? ReturnDate,
     decimal DailyRate,
-    string Status
+    string Status,
+    byte[] RowVersion
 );
