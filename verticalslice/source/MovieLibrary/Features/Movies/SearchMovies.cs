@@ -1,6 +1,5 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -22,63 +21,36 @@ public static class SearchMovies
 
     public class Handler : IRequestHandler<Query, List<MovieDto>>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _repository;
 
-        public Handler(MovieDbContext context)
+        public Handler(IMovieRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken)
         {
-            var query = _context.Movies.AsQueryable();
+            var movies = await _repository.SearchAsync(
+                request.Title,
+                request.Director,
+                request.Genre,
+                request.MinYear,
+                request.MaxYear,
+                request.MinRating,
+                cancellationToken
+            );
 
-            if (!string.IsNullOrWhiteSpace(request.Title))
-            {
-                query = query.Where(m => m.Title.Contains(request.Title));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Director))
-            {
-                query = query.Where(m => m.Director != null && m.Director.Contains(request.Director));
-            }
-
-            if (!string.IsNullOrWhiteSpace(request.Genre))
-            {
-                query = query.Where(m => m.Genre != null && m.Genre.Contains(request.Genre));
-            }
-
-            if (request.MinYear.HasValue)
-            {
-                query = query.Where(m => m.ReleaseYear >= request.MinYear.Value);
-            }
-
-            if (request.MaxYear.HasValue)
-            {
-                query = query.Where(m => m.ReleaseYear <= request.MaxYear.Value);
-            }
-
-            if (request.MinRating.HasValue)
-            {
-                query = query.Where(m => m.Rating >= request.MinRating.Value);
-            }
-
-            var movies = await query
-                .OrderByDescending(m => m.CreatedAt)
-                .Select(m => new MovieDto(
-                    m.Id,
-                    m.Title,
-                    m.Director,
-                    m.ReleaseYear,
-                    m.Genre,
-                    m.Rating,
-                    m.Description,
-                    m.CreatedAt,
-                    m.UpdatedAt
-                ))
-                .ToListAsync(cancellationToken);
-
-            return movies;
+            return movies.Select(m => new MovieDto(
+                m.Id,
+                m.Title,
+                m.Director,
+                m.ReleaseYear,
+                m.Genre,
+                m.Rating,
+                m.Description,
+                m.CreatedAt,
+                m.UpdatedAt
+            )).ToList();
         }
     }
 }

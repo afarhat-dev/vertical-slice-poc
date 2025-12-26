@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
 using MovieLibrary.Features.Movies;
 using MovieLibrary.Features.Rentals;
+using MovieLibrary.Repositories;
 using static MovieLibrary.Features.Movies.AddMovie;
 using static MovieLibrary.Features.Movies.UpdateMovie;
 using static MovieLibrary.Features.Rentals.CreateRental;
@@ -13,6 +14,10 @@ var builder = WebApplication.CreateBuilder(args);
 // Add DbContext with SQL Server
 builder.Services.AddDbContext<MovieDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Add Repositories
+builder.Services.AddScoped<IMovieRepository, MovieRepository>();
+builder.Services.AddScoped<IRentalRepository, RentalRepository>();
 
 // Add MediatR - Register handlers from MovieLibrary
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(MovieDbContext).Assembly));
