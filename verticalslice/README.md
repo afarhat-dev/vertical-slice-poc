@@ -21,20 +21,32 @@ Uses MediatR library to implement the mediator pattern, which:
 ## Project Structure
 
 ```
-WebClientApi/
-├── Controllers/
-│   └── MoviesController.cs          # REST API endpoints
+MovieLibrary/
 ├── Data/
 │   ├── Movie.cs                      # Movie entity
+│   ├── Rental.cs                     # Rental entity
+│   ├── RentalStatus.cs               # Rental status constants
 │   └── MovieDbContext.cs             # EF Core DbContext
 ├── Features/
-│   └── Movies/                       # Movie feature slices
-│       ├── AddMovie.cs               # Command to add a movie
-│       ├── GetAllMovies.cs           # Query to get all movies
-│       ├── GetMovieById.cs           # Query to get movie by ID
-│       ├── UpdateMovie.cs            # Command to update a movie
-│       ├── DeleteMovie.cs            # Command to delete a movie
-│       └── SearchMovies.cs           # Query to search movies
+│   ├── Movies/                       # Movie feature slices
+│   │   ├── AddMovie.cs               # Command to add a movie
+│   │   ├── GetAllMovies.cs           # Query to get all movies
+│   │   ├── GetMovieById.cs           # Query to get movie by ID
+│   │   ├── UpdateMovie.cs            # Command to update a movie
+│   │   ├── DeleteMovie.cs            # Command to delete a movie
+│   │   └── SearchMovies.cs           # Query to search movies
+│   └── Rentals/                      # Rental feature slices
+│       ├── CreateRental.cs           # Command to create a rental
+│       ├── GetAllRentals.cs          # Query to get all rentals
+│       ├── GetRentalById.cs          # Query to get rental by ID
+│       ├── ReturnRental.cs           # Command to return a rental
+│       └── RentalDto.cs              # Rental data transfer object
+└── Migrations/                       # EF Core database migrations
+
+WebClientApi/
+├── Controllers/
+│   ├── MoviesController.cs           # Movie REST API endpoints
+│   └── RentalsController.cs          # Rental REST API endpoints
 └── Program.cs                        # App configuration
 ```
 
@@ -72,13 +84,34 @@ WebClientApi/
   - `maxYear` - Maximum release year
   - `minRating` - Minimum rating
 
+### 7. Create Rental (Command)
+- **Endpoint**: `POST /api/rentals`
+- **Validation**: Customer name required, movie must exist, valid rental date and daily rate
+- **Handler**: Creates a new rental, fetches movie title, validates movie exists
+- **Business Rules**: Rental date cannot be too far in future or past, daily rate must be positive
+
+### 8. Get All Rentals (Query)
+- **Endpoint**: `GET /api/rentals`
+- **Returns**: List of all rentals with customer info, rental dates, and status
+
+### 9. Get Rental By ID (Query)
+- **Endpoint**: `GET /api/rentals/{id}`
+- **Returns**: Single rental or 404 if not found
+
+### 10. Return Rental (Command)
+- **Endpoint**: `PUT /api/rentals/{id}/return`
+- **Validation**: Return date required and valid, rental must be active
+- **Handler**: Marks rental as returned, calculates total cost based on days rented
+- **Business Rules**: Cannot return already-returned rental, return date must be after rental date
+
 ## Technologies Used
 
 - **.NET 10.0** - Web API framework
-- **MediatR 12.4.1** - Mediator pattern implementation
-- **Entity Framework Core 9.0.0** - ORM with In-Memory database
-- **FluentValidation 11.11.0** - Input validation
+- **MediatR 14.0.0** - Mediator pattern implementation
+- **Entity Framework Core 10.0.1** - ORM with SQL Server
+- **FluentValidation 12.1.1** - Input validation
 - **OpenAPI** - API documentation
+- **SQL Server** - Relational database with migrations support
 
 ## Benefits of This Architecture
 
@@ -101,12 +134,36 @@ WebClientApi/
 
 ## Running the Application
 
-```bash
-cd verticalslice/source/WebClientApi
-dotnet restore
-dotnet build
-dotnet run
-```
+### Prerequisites
+- .NET 10.0 SDK
+- SQL Server (LocalDB, Express, or full version)
+
+### Setup Steps
+
+1. **Update Connection String** (if needed)
+   Edit `appsettings.json` to match your SQL Server configuration:
+   ```json
+   "ConnectionStrings": {
+     "DefaultConnection": "Server=.;Database=MovieRentalDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true"
+   }
+   ```
+
+2. **Apply Database Migrations**
+   ```bash
+   cd verticalslice/source/WebClientApi
+   dotnet ef database update --project ../MovieLibrary
+   ```
+
+3. **Build and Run**
+   ```bash
+   dotnet restore
+   dotnet build
+   dotnet run
+   ```
+
+4. **Access the API**
+   - Navigate to `https://localhost:5001/swagger` for API documentation
+   - Or use the OpenAPI endpoint
 
 ## API Endpoints
 
@@ -160,6 +217,39 @@ Content-Type: application/json
 DELETE /api/movies/1
 ```
 
+### Create a Rental
+```http
+POST /api/rentals
+Content-Type: application/json
+
+{
+  "customerName": "John Doe",
+  "movieId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "rentalDate": "2025-12-24T10:00:00Z",
+  "dailyRate": 3.99
+}
+```
+
+### Get All Rentals
+```http
+GET /api/rentals
+```
+
+### Get Rental by ID
+```http
+GET /api/rentals/3fa85f64-5717-4562-b3fc-2c963f66afa6
+```
+
+### Return a Rental
+```http
+PUT /api/rentals/3fa85f64-5717-4562-b3fc-2c963f66afa6/return
+Content-Type: application/json
+
+{
+  "returnDate": "2025-12-26T10:00:00Z"
+}
+```
+
 ## Example Vertical Slice Structure
 
 Each feature slice (e.g., `AddMovie.cs`) contains:
@@ -193,11 +283,44 @@ FluentValidation is used for input validation:
 
 ## Database
 
-Uses Entity Framework Core with **In-Memory database** for simplicity. For production, replace with:
-- SQL Server
-- PostgreSQL
-- MySQL
-- etc.
+Uses Entity Framework Core with **SQL Server** and full migration support.
+
+### Database Schema
+
+**Movies Table:**
+- Id (uniqueidentifier, PK)
+- Title (nvarchar(200), required)
+- Director (nvarchar(100))
+- ReleaseYear (int)
+- Genre (nvarchar(50))
+- Rating (decimal(3,1))
+- Description (nvarchar(1000))
+- CreatedAt (datetime2)
+- UpdatedAt (datetime2)
+- RowVersion (rowversion, for concurrency control)
+
+**Rentals Table:**
+- Id (uniqueidentifier, PK)
+- MovieId (uniqueidentifier, FK to Movies, required)
+- CustomerName (nvarchar(200), required)
+- ItemName (nvarchar(200), required)
+- RentalDate (datetime2, required)
+- ReturnDate (datetime2, nullable)
+- DailyRate (decimal(18,2), required)
+- Status (nvarchar(50), required - "Active" or "Returned")
+- RowVersion (rowversion, for concurrency control)
+
+### Migrations
+
+To create a new migration after schema changes:
+```bash
+dotnet ef migrations add MigrationName --project MovieLibrary --startup-project WebClientApi
+```
+
+To update the database:
+```bash
+dotnet ef database update --project MovieLibrary --startup-project WebClientApi
+```
 
 ## Testing
 
@@ -215,6 +338,10 @@ To test the API:
 - Add authentication/authorization
 - Add logging and monitoring
 - Add integration tests
-- Replace in-memory database with persistent storage
 - Add API versioning
 - Add rate limiting
+- Add database indexes for frequently queried fields (MovieId, Status, CustomerName)
+- Implement soft delete for audit trail
+- Add late fee calculation logic
+- Implement movie inventory/availability tracking
+- Add maximum rental period enforcement

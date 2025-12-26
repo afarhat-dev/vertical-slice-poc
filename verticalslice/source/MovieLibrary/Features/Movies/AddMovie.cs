@@ -1,6 +1,7 @@
 using FluentValidation;
 using MediatR;
 using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,12 +55,12 @@ public static class AddMovie
 
     public class Handler : IRequestHandler<AddCommand, AddResult>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _repository;
         private readonly IValidator<AddCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<AddCommand> validator)
+        public Handler(IMovieRepository repository, IValidator<AddCommand> validator)
         {
-            _context = context;
+            _repository = repository;
             _validator = validator;
         }
 
@@ -82,10 +83,9 @@ public static class AddMovie
                 CreatedAt = DateTime.UtcNow
             };
 
-            _context.Movies.Add(movie);
-            await _context.SaveChangesAsync(cancellationToken);
+            var addedMovie = await _repository.AddAsync(movie, cancellationToken);
 
-            return new AddResult(movie.Id, movie.Title, "Movie added successfully");
+            return new AddResult(addedMovie.Id, addedMovie.Title, "Movie added successfully");
         }
     }
 }

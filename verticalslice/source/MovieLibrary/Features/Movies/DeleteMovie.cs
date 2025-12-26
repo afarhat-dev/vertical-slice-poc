@@ -1,6 +1,5 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,25 +14,21 @@ public static class DeleteMovie
 
     public class Handler : IRequestHandler<Command, DeleteResult>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _repository;
 
-        public Handler(MovieDbContext context)
+        public Handler(IMovieRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<DeleteResult> Handle(Command request, CancellationToken cancellationToken)
         {
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
+            var success = await _repository.DeleteAsync(request.Id, cancellationToken);
 
-            if (movie == null)
+            if (!success)
             {
                 return new DeleteResult(false, $"Movie with Id {request.Id} not found");
             }
-
-            _context.Movies.Remove(movie);
-            await _context.SaveChangesAsync(cancellationToken);
 
             return new DeleteResult(true, "Movie deleted successfully");
         }
