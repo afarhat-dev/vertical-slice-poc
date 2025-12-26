@@ -2,7 +2,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MovieLibrary.Controllers;
+using WebClientApi.Contracts;
 using MovieLibrary.Features.Movies;
 using static MovieLibrary.Features.Movies.AddMovie;
 using static MovieLibrary.Features.Movies.DeleteMovie;
