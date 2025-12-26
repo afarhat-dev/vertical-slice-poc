@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,12 +59,12 @@ public static class UpdateMovie
 
     public class Handler : IRequestHandler<UpdateCommand, UpdateResult>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _repository;
         private readonly IValidator<UpdateCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<UpdateCommand> validator)
+        public Handler(IMovieRepository repository, IValidator<UpdateCommand> validator)
         {
-            _context = context;
+            _repository = repository;
             _validator = validator;
         }
 
@@ -76,23 +76,23 @@ public static class UpdateMovie
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == request.Id, cancellationToken);
+            var movie = new Movie
+            {
+                Id = request.Id,
+                Title = request.Title,
+                Director = request.Director,
+                ReleaseYear = request.ReleaseYear,
+                Genre = request.Genre,
+                Rating = request.Rating,
+                Description = request.Description
+            };
 
-            if (movie == null)
+            var success = await _repository.UpdateAsync(movie, cancellationToken);
+
+            if (!success)
             {
                 return new UpdateResult(false, $"Movie with Id {request.Id} not found");
             }
-
-            movie.Title = request.Title;
-            movie.Director = request.Director;
-            movie.ReleaseYear = request.ReleaseYear;
-            movie.Genre = request.Genre;
-            movie.Rating = request.Rating;
-            movie.Description = request.Description;
-            movie.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync(cancellationToken);
 
             return new UpdateResult(true, "Movie updated successfully");
         }

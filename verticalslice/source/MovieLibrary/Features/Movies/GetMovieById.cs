@@ -1,8 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,31 +13,33 @@ public static class GetMovieById
 
     public class Handler : IRequestHandler<Query, MovieDto?>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _repository;
 
-        public Handler(MovieDbContext context)
+        public Handler(IMovieRepository repository)
         {
-            _context = context;
+            _repository = repository;
         }
 
         public async Task<MovieDto?> Handle(Query request, CancellationToken cancellationToken)
         {
-            var movie = await _context.Movies
-                .Where(m => m.Id == request.Id)
-                .Select(m => new MovieDto(
-                    m.Id,
-                    m.Title,
-                    m.Director,
-                    m.ReleaseYear,
-                    m.Genre,
-                    m.Rating,
-                    m.Description,
-                    m.CreatedAt,
-                    m.UpdatedAt
-                ))
-                .FirstOrDefaultAsync(cancellationToken);
+            var movie = await _repository.GetByIdAsync(request.Id, cancellationToken);
 
-            return movie;
+            if (movie == null)
+            {
+                return null;
+            }
+
+            return new MovieDto(
+                movie.Id,
+                movie.Title,
+                movie.Director,
+                movie.ReleaseYear,
+                movie.Genre,
+                movie.Rating,
+                movie.Description,
+                movie.CreatedAt,
+                movie.UpdatedAt
+            );
         }
     }
 }

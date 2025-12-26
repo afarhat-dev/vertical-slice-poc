@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,12 +36,12 @@ public static class ReturnRental
 
     public class Handler : IRequestHandler<Command, ReturnRentalResult?>
     {
-        private readonly MovieDbContext _context;
+        private readonly IRentalRepository _rentalRepository;
         private readonly IValidator<Command> _validator;
 
-        public Handler(MovieDbContext context, IValidator<Command> validator)
+        public Handler(IRentalRepository rentalRepository, IValidator<Command> validator)
         {
-            _context = context;
+            _rentalRepository = rentalRepository;
             _validator = validator;
         }
 
@@ -53,8 +53,7 @@ public static class ReturnRental
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var rental = await _context.Rentals
-                .FirstOrDefaultAsync(r => r.Id == request.Id, cancellationToken);
+            var rental = await _rentalRepository.GetByIdAsync(request.Id, cancellationToken);
 
             if (rental is null)
                 return null;
@@ -74,7 +73,7 @@ public static class ReturnRental
             rental.ReturnDate = request.ReturnDate;
             rental.Status = RentalStatus.Returned;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _rentalRepository.UpdateAsync(rental, cancellationToken);
 
             var days = (rental.ReturnDate.Value - rental.RentalDate).Days;
             if (days < 1) days = 1; // Minimum 1 day charge

@@ -1,8 +1,6 @@
 using MediatR;
-using Microsoft.EntityFrameworkCore;
-using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,27 +12,31 @@ public static class GetRentalById
 
     public class Handler : IRequestHandler<Query, RentalDto?>
     {
-        private readonly MovieDbContext _context;
+        private readonly IRentalRepository _rentalRepository;
 
-        public Handler(MovieDbContext context)
+        public Handler(IRentalRepository rentalRepository)
         {
-            _context = context;
+            _rentalRepository = rentalRepository;
         }
 
         public async Task<RentalDto?> Handle(Query request, CancellationToken cancellationToken)
         {
-            return await _context.Rentals
-                .Where(r => r.Id == request.Id)
-                .Select(r => new RentalDto(
-                    r.Id,
-                    r.CustomerName,
-                    r.MovieId,
-                    r.RentalDate,
-                    r.ReturnDate,
-                    r.DailyRate,
-                    r.Status
-                ))
-                .FirstOrDefaultAsync(cancellationToken);
+            var rental = await _rentalRepository.GetByIdAsync(request.Id, cancellationToken);
+
+            if (rental == null)
+            {
+                return null;
+            }
+
+            return new RentalDto(
+                rental.Id,
+                rental.CustomerName,
+                rental.MovieId,
+                rental.RentalDate,
+                rental.ReturnDate,
+                rental.DailyRate,
+                rental.Status
+            );
         }
     }
 }

@@ -1,7 +1,7 @@
 using FluentValidation;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using MovieLibrary.Data;
+using MovieLibrary.Repositories;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,11 +21,11 @@ public static class CreateRental
 
     public class Validator : AbstractValidator<CreateRentalCommand>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _movieRepository;
 
-        public Validator(MovieDbContext context)
+        public Validator(IMovieRepository movieRepository)
         {
-            _context = context;
+            _movieRepository = movieRepository;
 
             RuleFor(x => x.CustomerName)
                 .NotEmpty().WithMessage("Customer name is required")
@@ -41,19 +41,21 @@ public static class CreateRental
 
             RuleFor(x => x.MovieId)
                 .MustAsync(async (movieId, cancellationToken) =>
-                    await _context.Movies.AnyAsync(m => m.Id == movieId, cancellationToken))
+                    await _movieRepository.ExistsAsync(movieId, cancellationToken))
                 .WithMessage("Movie with the specified ID does not exist");
         }
     }
 
     public class Handler : IRequestHandler<CreateRentalCommand, Result>
     {
-        private readonly MovieDbContext _context;
+        private readonly IMovieRepository _movieRepository;
+        private readonly IRentalRepository _rentalRepository;
         private readonly IValidator<CreateRentalCommand> _validator;
 
-        public Handler(MovieDbContext context, IValidator<CreateRentalCommand> validator)
+        public Handler(IMovieRepository movieRepository, IRentalRepository rentalRepository, IValidator<CreateRentalCommand> validator)
         {
-            _context = context;
+            _movieRepository = movieRepository;
+            _rentalRepository = rentalRepository;
             _validator = validator;
         }
 
@@ -66,8 +68,7 @@ public static class CreateRental
             }
 
             // Fetch the movie to get its title
-            var movie = await _context.Movies
-                .FirstOrDefaultAsync(m => m.Id == request.MovieId, cancellationToken);
+            var movie = await _movieRepository.GetByIdAsync(request.MovieId, cancellationToken);
 
             if (movie == null)
             {
@@ -84,10 +85,9 @@ public static class CreateRental
                 Status = RentalStatus.Active
             };
 
-            _context.Rentals.Add(rental);
-            await _context.SaveChangesAsync(cancellationToken);
+            var addedRental = await _rentalRepository.AddAsync(rental, cancellationToken);
 
-            return new Result(rental.Id, rental.CustomerName, rental.MovieId, "Rental created successfully");
+            return new Result(addedRental.Id, addedRental.CustomerName, addedRental.MovieId, "Rental created successfully");
         }
     }
 }
