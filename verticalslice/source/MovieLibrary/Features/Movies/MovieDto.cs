@@ -13,9 +13,8 @@ public class MovieDto(
         string? _Description,
         DateTime _CreatedAt,
         DateTime? _UpdatedAt
-)
-{
-    public Guid Id { get; set; } = _Id;
+):BaseDto(_Id)
+{   
     public string Title { get; set; } = _Title;
     public string? Director { get; set; } = _Director;
     public int? ReleaseYear { get; set; } = _ReleaseYear;
