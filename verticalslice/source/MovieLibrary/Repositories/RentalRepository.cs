@@ -23,6 +23,14 @@ public class RentalRepository : IRentalRepository
             .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
     }
 
+    public async Task<Rental?> GetByIdAsNoTrackingAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return await _context.Rentals
+            .AsNoTracking()
+            .Include(r => r.Movie)
+            .FirstOrDefaultAsync(r => r.Id == id, cancellationToken);
+    }
+
     public async Task<List<Rental>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await _context.Rentals
@@ -39,15 +47,23 @@ public class RentalRepository : IRentalRepository
 
     public async Task<bool> UpdateAsync(Rental rental, CancellationToken cancellationToken = default)
     {
-        var existingRental = await _context.Rentals.FindAsync(new object[] { rental.Id }, cancellationToken);
-        if (existingRental == null)
+        // Check if the rental exists without tracking to avoid conflicts
+        var exists = await _context.Rentals.AsNoTracking()
+            .AnyAsync(r => r.Id == rental.Id, cancellationToken);
+
+        if (!exists)
         {
             return false;
         }
 
-        existingRental.ReturnDate = rental.ReturnDate;
-        existingRental.Status = rental.Status;
+        // Attach the rental and mark it as modified
+        var entry = _context.Rentals.Attach(rental);
+        entry.State = EntityState.Modified;
 
+        // Set the original RowVersion value to enable EF Core's concurrency check
+        entry.Property(r => r.RowVersion).OriginalValue = rental.RowVersion;
+
+        // SaveChanges will throw DbUpdateConcurrencyException if RowVersion doesn't match
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
