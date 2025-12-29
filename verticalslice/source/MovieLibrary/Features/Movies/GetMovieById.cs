@@ -39,7 +39,7 @@ public static class GetMovieById
                 movie.Description,
                 movie.CreatedAt,
                 movie.UpdatedAt
-            );
+            ) { RowVersion = movie.RowVersion };
         }
     }
 }

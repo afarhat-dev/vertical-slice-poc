@@ -50,7 +50,7 @@ public static class SearchMovies
                 m.Description,
                 m.CreatedAt,
                 m.UpdatedAt
-            )).ToList();
+            ) { RowVersion = m.RowVersion }).ToList();
         }
     }
 }

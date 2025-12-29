@@ -82,20 +82,26 @@ public class MovieRepository : IMovieRepository
 
     public async Task<bool> UpdateAsync(Movie movie, CancellationToken cancellationToken = default)
     {
-        var existingMovie = await GetByIdAsync(movie.Id, cancellationToken);
-        if (existingMovie == null)
+        // Check if the movie exists without tracking to avoid conflicts
+        var exists = await _context.Movies.AsNoTracking()
+            .AnyAsync(m => m.Id == movie.Id, cancellationToken);
+
+        if (!exists)
         {
             return false;
         }
 
-        existingMovie.Title = movie.Title;
-        existingMovie.Director = movie.Director;
-        existingMovie.ReleaseYear = movie.ReleaseYear;
-        existingMovie.Genre = movie.Genre;
-        existingMovie.Rating = movie.Rating;
-        existingMovie.Description = movie.Description;
-        existingMovie.UpdatedAt = DateTime.UtcNow;
+        // Set the updated timestamp
+        movie.UpdatedAt = DateTime.UtcNow;
 
+        // Attach the movie and mark it as modified
+        var entry = _context.Movies.Attach(movie);
+        entry.State = EntityState.Modified;
+
+        // Set the original RowVersion value to enable EF Core's concurrency check
+        entry.Property(m => m.RowVersion).OriginalValue = movie.RowVersion;
+
+        // SaveChanges will throw DbUpdateConcurrencyException if RowVersion doesn't match
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }

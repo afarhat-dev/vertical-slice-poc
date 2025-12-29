@@ -1,0 +1,28 @@
+namespace WebClientApi.Contracts;
+
+public class BaseMovieRequest
+{
+    public BaseMovieRequest(string? title, string? director, int? releaseYear, string? genre, decimal? rating, string? description)
+    {
+        _title = title;
+        _director = director;
+        _releaseYear = releaseYear;
+        _genre = genre;
+        _rating = rating;
+        _description = description;
+    }
+
+    private string? _title;
+    private string? _director;
+    private int? _releaseYear;
+    private string? _genre;
+    private decimal? _rating;
+    private string? _description;
+
+    public string? Title { get => _title; set => _title = value; }
+    public string? Director { get => _director; set => _director = value; }
+    public int? ReleaseYear { get => _releaseYear; set => _releaseYear = value; }
+    public string? Genre { get => _genre; set => _genre = value; }
+    public decimal? Rating { get => _rating; set => _rating = value; }
+    public string? Description { get => _description; set => _description = value; }
+}

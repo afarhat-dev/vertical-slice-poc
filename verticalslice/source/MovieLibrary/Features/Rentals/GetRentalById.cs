@@ -35,7 +35,8 @@ public static class GetRentalById
                 rental.RentalDate,
                 rental.ReturnDate,
                 rental.DailyRate,
-                rental.Status
+                rental.Status,
+                rental.RowVersion
             );
         }
     }

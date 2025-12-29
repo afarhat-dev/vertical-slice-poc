@@ -1,6 +1,8 @@
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using WebClientApi.Contracts;
 using MovieLibrary.Features.Rentals;
 using static MovieLibrary.Features.Rentals.CreateRental;
 using static MovieLibrary.Features.Rentals.ReturnRental;
@@ -57,10 +59,17 @@ public class RentalsController : ControllerBase
     [HttpPost]
     [ProducesResponseType(typeof(CreateRental.Result), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<CreateRental.Result>> Create([FromBody] CreateRental.CreateRentalCommand command)
+    public async Task<ActionResult<CreateRental.Result>> Create([FromBody] CreateRentalRequest request)
     {
         try
         {
+            var command = new CreateRentalCommand(
+                request.CustomerName,
+                request.MovieId,
+                request.RentalDate,
+                request.DailyRate
+            );
+
             var result = await _mediator.Send(command);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
@@ -82,7 +91,7 @@ public class RentalsController : ControllerBase
     {
         try
         {
-            var command = new ReturnRental.Command(id, request.ReturnDate);
+            var command = new ReturnRental.Command(id, request.ReturnDate, request.RowVersion);
             var result = await _mediator.Send(command);
 
             if (result == null)
@@ -92,6 +101,10 @@ public class RentalsController : ControllerBase
 
             return Ok(result);
         }
+        catch (DbUpdateConcurrencyException)
+        {
+            return Conflict(new { message = "The rental was modified by another user. Please refresh and try again." });
+        }
         catch (ValidationException ex)
         {
             var errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage });
@@ -99,5 +112,3 @@ public class RentalsController : ControllerBase
         }
     }
 }
-
-public record ReturnRentalRequest(DateTime ReturnDate);

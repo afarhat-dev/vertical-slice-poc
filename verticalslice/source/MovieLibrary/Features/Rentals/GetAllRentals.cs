@@ -31,7 +31,8 @@ public static class GetAllRentals
                 r.RentalDate,
                 r.ReturnDate,
                 r.DailyRate,
-                r.Status
+                r.Status,
+                r.RowVersion
             )).ToList();
         }
     }

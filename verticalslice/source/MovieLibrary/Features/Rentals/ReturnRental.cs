@@ -10,7 +10,7 @@ namespace MovieLibrary.Features.Rentals;
 
 public static class ReturnRental
 {
-    public record Command(Guid Id, DateTime ReturnDate) : IRequest<ReturnRentalResult?>;
+    public record Command(Guid Id, DateTime ReturnDate, byte[] RowVersion) : IRequest<ReturnRentalResult?>;
 
     public record ReturnRentalResult(
         Guid Id,
@@ -53,7 +53,7 @@ public static class ReturnRental
                 throw new ValidationException(validationResult.Errors);
             }
 
-            var rental = await _rentalRepository.GetByIdAsync(request.Id, cancellationToken);
+            var rental = await _rentalRepository.GetByIdAsNoTrackingAsync(request.Id, cancellationToken);
 
             if (rental is null)
                 return null;
@@ -70,8 +70,10 @@ public static class ReturnRental
                 throw new ValidationException("Return date cannot be before rental date");
             }
 
+            // Create updated rental with RowVersion for concurrency check
             rental.ReturnDate = request.ReturnDate;
             rental.Status = RentalStatus.Returned;
+            rental.RowVersion = request.RowVersion;
 
             await _rentalRepository.UpdateAsync(rental, cancellationToken);
 
