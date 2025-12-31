@@ -10,7 +10,7 @@ public static partial class GetAllMovies
 {
     public record Query : IRequest<List<MovieDto>>;
 
-    public class Handler >
+    public class Handler
     {
         private readonly IMovieRepository _repository;
 

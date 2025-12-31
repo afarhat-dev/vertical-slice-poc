@@ -15,10 +15,10 @@ public static class SearchMovies
         int? MinYear,
         int? MaxYear,
         decimal? MinRating
-    )>;
+    );
  
 
-    public class Handler >
+    public class Handler
     {
         private readonly IMovieRepository _repository;
 

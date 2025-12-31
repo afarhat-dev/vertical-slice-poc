@@ -8,9 +8,9 @@ namespace MovieLibrary.Features.Rentals;
 
 public static class GetAllRentals
 {
-    public record Query()>;
+    public record Query();
 
-    public class Handler >
+    public class Handler
     {
         private readonly IRentalRepository _rentalRepository;
 
