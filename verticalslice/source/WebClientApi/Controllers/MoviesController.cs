@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebClientApi.Contracts;
@@ -15,12 +14,29 @@ namespace WebClientApi.Controllers;
 [Route("api/[controller]")]
 public partial class MoviesController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly AddMovie.Handler _addMovieHandler;
+    private readonly UpdateMovie.Handler _updateMovieHandler;
+    private readonly DeleteMovie.Handler _deleteMovieHandler;
+    private readonly GetMovieById.Handler _getMovieByIdHandler;
+    private readonly GetAllMovies.Handler _getAllMoviesHandler;
+    private readonly SearchMovies.Handler _searchMoviesHandler;
     private readonly ILogger<MoviesController> _logger;
 
-    public MoviesController(IMediator mediator, ILogger<MoviesController> logger)
+    public MoviesController(
+        AddMovie.Handler addMovieHandler,
+        UpdateMovie.Handler updateMovieHandler,
+        DeleteMovie.Handler deleteMovieHandler,
+        GetMovieById.Handler getMovieByIdHandler,
+        GetAllMovies.Handler getAllMoviesHandler,
+        SearchMovies.Handler searchMoviesHandler,
+        ILogger<MoviesController> logger)
     {
-        _mediator = mediator;
+        _addMovieHandler = addMovieHandler;
+        _updateMovieHandler = updateMovieHandler;
+        _deleteMovieHandler = deleteMovieHandler;
+        _getMovieByIdHandler = getMovieByIdHandler;
+        _getAllMoviesHandler = getAllMoviesHandler;
+        _searchMoviesHandler = searchMoviesHandler;
         _logger = logger;
     }
 
@@ -32,7 +48,7 @@ public partial class MoviesController : ControllerBase
     public async Task<ActionResult<List<MovieDto>>> GetAll()
     {
         var query = new GetAllMovies.Query();
-        var result = await _mediator.Send(query);
+        var result = await _getAllMoviesHandler.ExecuteAsync(query);
         return Ok(result);
     }
 
@@ -45,7 +61,7 @@ public partial class MoviesController : ControllerBase
     public async Task<ActionResult<MovieDto>> GetById(Guid id)
     {
         var query = new GetMovieById.Query(id);
-        var result = await _mediator.Send(query);
+        var result = await _getMovieByIdHandler.ExecuteAsync(query);
 
         if (result == null)
         {
@@ -69,7 +85,7 @@ public partial class MoviesController : ControllerBase
         [FromQuery] decimal? minRating)
     {
         var query = new SearchMovies.Query(title, director, genre, minYear, maxYear, minRating);
-        var result = await _mediator.Send(query);
+        var result = await _searchMoviesHandler.ExecuteAsync(query);
         return Ok(result);
     }
 
@@ -92,7 +108,7 @@ public partial class MoviesController : ControllerBase
                 request.Description
             );
 
-            var result = await _mediator.Send(command);
+            var result = await _addMovieHandler.ExecuteAsync(command);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         catch (ValidationException ex)
@@ -124,7 +140,7 @@ public partial class MoviesController : ControllerBase
                 request.RowVersion
             );
 
-            var result = await _mediator.Send(command);
+            var result = await _updateMovieHandler.ExecuteAsync(command);
 
             if (!result.Success)
             {
@@ -153,7 +169,7 @@ public partial class MoviesController : ControllerBase
     public async Task<ActionResult<DeleteResult>> Delete(Guid id)
     {
         var command = new DeleteMovie.Command(id);
-        var result = await _mediator.Send(command);
+        var result = await _deleteMovieHandler.ExecuteAsync(command);
 
         if (!result.Success)
         {

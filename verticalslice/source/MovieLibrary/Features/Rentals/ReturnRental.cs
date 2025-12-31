@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using MovieLibrary.Data;
 using MovieLibrary.Repositories;
 using System;
@@ -10,7 +9,7 @@ namespace MovieLibrary.Features.Rentals;
 
 public static class ReturnRental
 {
-    public record Command(Guid Id, DateTime ReturnDate, byte[] RowVersion) : IRequest<ReturnRentalResult?>;
+    public record Command(Guid Id, DateTime ReturnDate, byte[] RowVersion);
 
     public record ReturnRentalResult(
         Guid Id,
@@ -34,7 +33,7 @@ public static class ReturnRental
         }
     }
 
-    public class Handler : IRequestHandler<Command, ReturnRentalResult?>
+    public class Handler 
     {
         private readonly IRentalRepository _rentalRepository;
         private readonly IValidator<Command> _validator;
@@ -45,7 +44,7 @@ public static class ReturnRental
             _validator = validator;
         }
 
-        public async Task<ReturnRentalResult?> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<ReturnRentalResult?> ExecuteAsync(Command request, CancellationToken cancellationToken = default)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)

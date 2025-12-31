@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebClientApi.Contracts;
@@ -13,12 +12,23 @@ namespace WebClientApi.Controllers;
 [Route("api/[controller]")]
 public class RentalsController : ControllerBase
 {
-    private readonly IMediator _mediator;
+    private readonly CreateRental.Handler _createRentalHandler;
+    private readonly ReturnRental.Handler _returnRentalHandler;
+    private readonly GetRentalById.Handler _getRentalByIdHandler;
+    private readonly GetAllRentals.Handler _getAllRentalsHandler;
     private readonly ILogger<RentalsController> _logger;
 
-    public RentalsController(IMediator mediator, ILogger<RentalsController> logger)
+    public RentalsController(
+        CreateRental.Handler createRentalHandler,
+        ReturnRental.Handler returnRentalHandler,
+        GetRentalById.Handler getRentalByIdHandler,
+        GetAllRentals.Handler getAllRentalsHandler,
+        ILogger<RentalsController> logger)
     {
-        _mediator = mediator;
+        _createRentalHandler = createRentalHandler;
+        _returnRentalHandler = returnRentalHandler;
+        _getRentalByIdHandler = getRentalByIdHandler;
+        _getAllRentalsHandler = getAllRentalsHandler;
         _logger = logger;
     }
 
@@ -30,7 +40,7 @@ public class RentalsController : ControllerBase
     public async Task<ActionResult<List<RentalDto>>> GetAll()
     {
         var query = new GetAllRentals.Query();
-        var result = await _mediator.Send(query);
+        var result = await _getAllRentalsHandler.ExecuteAsync(query);
         return Ok(result);
     }
 
@@ -43,7 +53,7 @@ public class RentalsController : ControllerBase
     public async Task<ActionResult<RentalDto>> GetById(Guid id)
     {
         var query = new GetRentalById.Query(id);
-        var result = await _mediator.Send(query);
+        var result = await _getRentalByIdHandler.ExecuteAsync(query);
 
         if (result == null)
         {
@@ -70,7 +80,7 @@ public class RentalsController : ControllerBase
                 request.DailyRate
             );
 
-            var result = await _mediator.Send(command);
+            var result = await _createRentalHandler.ExecuteAsync(command);
             return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
         catch (ValidationException ex)
@@ -92,7 +102,7 @@ public class RentalsController : ControllerBase
         try
         {
             var command = new ReturnRental.Command(id, request.ReturnDate, request.RowVersion);
-            var result = await _mediator.Send(command);
+            var result = await _returnRentalHandler.ExecuteAsync(command);
 
             if (result == null)
             {

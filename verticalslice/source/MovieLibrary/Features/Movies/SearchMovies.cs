@@ -1,4 +1,3 @@
-using MediatR;
 using MovieLibrary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,10 +15,10 @@ public static class SearchMovies
         int? MinYear,
         int? MaxYear,
         decimal? MinRating
-    ) : IRequest<List<MovieDto>>;
+    )>;
  
 
-    public class Handler : IRequestHandler<Query, List<MovieDto>>
+    public class Handler >
     {
         private readonly IMovieRepository _repository;
 
@@ -28,7 +27,7 @@ public static class SearchMovies
             _repository = repository;
         }
 
-        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken = default)
         {
             var movies = await _repository.SearchAsync(
                 request.Title,

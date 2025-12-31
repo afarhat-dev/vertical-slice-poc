@@ -1,4 +1,3 @@
-using MediatR;
 using MovieLibrary.Repositories;
 using System;
 using System.Threading;
@@ -8,10 +7,10 @@ namespace MovieLibrary.Features.Movies;
 
 public static class GetMovieById
 {
-    public record Query(Guid Id) : IRequest<MovieDto?>;
+    public record Query(Guid Id);
 
 
-    public class Handler : IRequestHandler<Query, MovieDto?>
+    public class Handler 
     {
         private readonly IMovieRepository _repository;
 
@@ -20,7 +19,7 @@ public static class GetMovieById
             _repository = repository;
         }
 
-        public async Task<MovieDto?> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<MovieDto?> ExecuteAsync(Query request, CancellationToken cancellationToken = default)
         {
             var movie = await _repository.GetByIdAsync(request.Id, cancellationToken);
 

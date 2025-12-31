@@ -1,4 +1,3 @@
-using MediatR;
 using MovieLibrary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +10,7 @@ public static partial class GetAllMovies
 {
     public record Query : IRequest<List<MovieDto>>;
 
-    public class Handler : IRequestHandler<Query, List<MovieDto>>
+    public class Handler >
     {
         private readonly IMovieRepository _repository;
 
@@ -20,7 +19,7 @@ public static partial class GetAllMovies
             _repository = repository;
         }
 
-        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken = default)
         {
             var movies = await _repository.GetAllAsync(cancellationToken);
 
