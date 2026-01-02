@@ -57,7 +57,7 @@ public class GetAllMoviesTests
             .ReturnsAsync(movies);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -77,7 +77,7 @@ public class GetAllMoviesTests
             .ReturnsAsync(new List<Movie>());
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();

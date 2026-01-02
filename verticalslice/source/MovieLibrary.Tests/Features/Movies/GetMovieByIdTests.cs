@@ -46,7 +46,7 @@ public class GetMovieByIdTests
             .ReturnsAsync(movie);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -70,7 +70,7 @@ public class GetMovieByIdTests
             .ReturnsAsync((Movie?)null);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();

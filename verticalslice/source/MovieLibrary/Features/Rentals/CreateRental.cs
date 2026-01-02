@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using MovieLibrary.Data;
 using MovieLibrary.Repositories;
 using System;
@@ -15,7 +14,7 @@ public static class CreateRental
         Guid MovieId,
         DateTime RentalDate,
         decimal DailyRate
-    ) : IRequest<Result>;
+    );
 
     public record Result(Guid Id, string CustomerName, Guid MovieId, string Message);
 
@@ -46,7 +45,7 @@ public static class CreateRental
         }
     }
 
-    public class Handler : IRequestHandler<CreateRentalCommand, Result>
+    public class Handler 
     {
         private readonly IMovieRepository _movieRepository;
         private readonly IRentalRepository _rentalRepository;
@@ -59,7 +58,7 @@ public static class CreateRental
             _validator = validator;
         }
 
-        public async Task<Result> Handle(CreateRentalCommand request, CancellationToken cancellationToken)
+        public async Task<Result> ExecuteAsync(CreateRentalCommand request, CancellationToken cancellationToken = default)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)
