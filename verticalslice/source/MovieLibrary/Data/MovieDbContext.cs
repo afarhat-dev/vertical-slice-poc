@@ -10,6 +10,7 @@ public class MovieDbContext : DbContext
 
     public DbSet<Movie> Movies => Set<Movie>();
     public DbSet<Rental> Rentals => Set<Rental>();
+    public DbSet<RequestLog> RequestLogs => Set<RequestLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -45,6 +46,25 @@ public class MovieDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.MovieId)
                 .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<RequestLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnType("uniqueidentifier");
+            entity.Property(e => e.CorrelationId).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Timestamp).IsRequired();
+            entity.Property(e => e.HttpMethod).IsRequired().HasMaxLength(10);
+            entity.Property(e => e.Path).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.QueryString).HasMaxLength(2000);
+            entity.Property(e => e.SourceIpAddress).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.HostIpAddress).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.StatusCode);
+            entity.Property(e => e.ResponseTimeMs);
+
+            // Create index on CorrelationId for faster lookups
+            entity.HasIndex(e => e.CorrelationId);
+            entity.HasIndex(e => e.Timestamp);
         });
     }
 }

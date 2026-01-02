@@ -1,5 +1,4 @@
 using FluentValidation;
-using MediatR;
 using MovieLibrary.Data;
 using MovieLibrary.Repositories;
 using System;
@@ -17,7 +16,7 @@ public static class AddMovie
         string? Genre,
         decimal? Rating,
         string? Description
-    ) : IRequest<AddResult>;
+    );
 
     public record AddResult(Guid Id, string Title, string Message);
 
@@ -53,7 +52,7 @@ public static class AddMovie
         }
     }
 
-    public class Handler : IRequestHandler<AddCommand, AddResult>
+    public class Handler
     {
         private readonly IMovieRepository _repository;
         private readonly IValidator<AddCommand> _validator;
@@ -64,7 +63,7 @@ public static class AddMovie
             _validator = validator;
         }
 
-        public async Task<AddResult> Handle(AddCommand request, CancellationToken cancellationToken)
+        public async Task<AddResult> ExecuteAsync(AddCommand request, CancellationToken cancellationToken = default)
         {
             var validationResult = await _validator.ValidateAsync(request, cancellationToken);
             if (!validationResult.IsValid)

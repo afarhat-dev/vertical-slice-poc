@@ -1,4 +1,3 @@
-using MediatR;
 using MovieLibrary.Repositories;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +8,9 @@ namespace MovieLibrary.Features.Rentals;
 
 public static class GetAllRentals
 {
-    public record Query() : IRequest<List<RentalDto>>;
+    public record Query();
 
-    public class Handler : IRequestHandler<Query, List<RentalDto>>
+    public class Handler
     {
         private readonly IRentalRepository _rentalRepository;
 
@@ -20,7 +19,7 @@ public static class GetAllRentals
             _rentalRepository = rentalRepository;
         }
 
-        public async Task<List<RentalDto>> Handle(Query request, CancellationToken cancellationToken)
+        public async Task<List<RentalDto>> ExecuteAsync(Query request, CancellationToken cancellationToken = default)
         {
             var rentals = await _rentalRepository.GetAllAsync(cancellationToken);
 

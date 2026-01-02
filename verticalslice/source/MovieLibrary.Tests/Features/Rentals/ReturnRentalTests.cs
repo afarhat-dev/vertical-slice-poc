@@ -62,7 +62,7 @@ public class ReturnRentalTests
             .ReturnsAsync(true);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -117,7 +117,7 @@ public class ReturnRentalTests
             .ReturnsAsync(true);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -139,7 +139,7 @@ public class ReturnRentalTests
             .ReturnsAsync((Rental?)null);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();
@@ -175,7 +175,7 @@ public class ReturnRentalTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 
     [Fact]
@@ -210,7 +210,7 @@ public class ReturnRentalTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 
     [Fact]
@@ -249,6 +249,6 @@ public class ReturnRentalTests
 
         // Act & Assert
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 }

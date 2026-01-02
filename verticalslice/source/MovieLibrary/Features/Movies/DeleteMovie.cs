@@ -1,4 +1,3 @@
-using MediatR;
 using MovieLibrary.Repositories;
 using System;
 using System.Threading;
@@ -8,11 +7,11 @@ namespace MovieLibrary.Features.Movies;
 
 public static class DeleteMovie
 {
-    public record Command(Guid Id) : IRequest<DeleteResult>;
+    public record Command(Guid Id);
 
     public record DeleteResult(bool Success, string Message);
 
-    public class Handler : IRequestHandler<Command, DeleteResult>
+    public class Handler 
     {
         private readonly IMovieRepository _repository;
 
@@ -21,7 +20,7 @@ public static class DeleteMovie
             _repository = repository;
         }
 
-        public async Task<DeleteResult> Handle(Command request, CancellationToken cancellationToken)
+        public async Task<DeleteResult> ExecuteAsync(Command request, CancellationToken cancellationToken = default)
         {
             var success = await _repository.DeleteAsync(request.Id, cancellationToken);
 

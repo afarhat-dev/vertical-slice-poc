@@ -51,7 +51,7 @@ public class UpdateMovieTests
             .ReturnsAsync(true);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -93,7 +93,7 @@ public class UpdateMovieTests
             .ReturnsAsync(false);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -127,7 +127,7 @@ public class UpdateMovieTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 
     [Fact]
@@ -156,6 +156,6 @@ public class UpdateMovieTests
 
         // Act & Assert
         await Assert.ThrowsAsync<DbUpdateConcurrencyException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 }

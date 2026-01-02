@@ -59,7 +59,7 @@ public class GetAllRentalsTests
             .ReturnsAsync(rentals);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -79,7 +79,7 @@ public class GetAllRentalsTests
             .ReturnsAsync(new List<Rental>());
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();

@@ -78,7 +78,7 @@ public class CreateRentalTests
             .ReturnsAsync(rental);
 
         // Act
-        var result = await _handler.Handle(command, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(command, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -120,7 +120,7 @@ public class CreateRentalTests
 
         // Act & Assert
         await Assert.ThrowsAsync<InvalidOperationException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 
     [Fact]
@@ -146,7 +146,7 @@ public class CreateRentalTests
 
         // Act & Assert
         await Assert.ThrowsAsync<ValidationException>(() =>
-            _handler.Handle(command, CancellationToken.None));
+            _handler.ExecuteAsync(command, CancellationToken.None));
     }
 
     [Fact]
