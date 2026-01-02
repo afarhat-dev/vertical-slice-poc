@@ -16,7 +16,6 @@ public static class SearchMovies
         int? MaxYear,
         decimal? MinRating
     );
- 
 
     public class Handler
     {
@@ -27,7 +26,7 @@ public static class SearchMovies
             _repository = repository;
         }
 
-        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken = default)
+        public async Task<List<MovieDto>> ExecuteAsync(Query request, CancellationToken cancellationToken = default)
         {
             var movies = await _repository.SearchAsync(
                 request.Title,

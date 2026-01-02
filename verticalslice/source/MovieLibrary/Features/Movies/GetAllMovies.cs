@@ -8,7 +8,7 @@ namespace MovieLibrary.Features.Movies;
 
 public static partial class GetAllMovies
 {
-    public record Query : IRequest<List<MovieDto>>;
+    public record Query();
 
     public class Handler
     {
@@ -19,7 +19,7 @@ public static partial class GetAllMovies
             _repository = repository;
         }
 
-        public async Task<List<MovieDto>> Handle(Query request, CancellationToken cancellationToken = default)
+        public async Task<List<MovieDto>> ExecuteAsync(Query request, CancellationToken cancellationToken = default)
         {
             var movies = await _repository.GetAllAsync(cancellationToken);
 

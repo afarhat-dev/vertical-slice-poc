@@ -19,7 +19,7 @@ public static class GetAllRentals
             _rentalRepository = rentalRepository;
         }
 
-        public async Task<List<RentalDto>> Handle(Query request, CancellationToken cancellationToken = default)
+        public async Task<List<RentalDto>> ExecuteAsync(Query request, CancellationToken cancellationToken = default)
         {
             var rentals = await _rentalRepository.GetAllAsync(cancellationToken);
 
