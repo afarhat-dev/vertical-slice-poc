@@ -54,7 +54,7 @@ public class SearchMoviesTests
             .ReturnsAsync(movies);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -94,7 +94,7 @@ public class SearchMoviesTests
             .ReturnsAsync(movies);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -121,7 +121,7 @@ public class SearchMoviesTests
             .ReturnsAsync(new List<Movie>());
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();

@@ -45,7 +45,7 @@ public class GetRentalByIdTests
             .ReturnsAsync(rental);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().NotBeNull();
@@ -67,7 +67,7 @@ public class GetRentalByIdTests
             .ReturnsAsync((Rental?)null);
 
         // Act
-        var result = await _handler.Handle(query, CancellationToken.None);
+        var result = await _handler.ExecuteAsync(query, CancellationToken.None);
 
         // Assert
         result.Should().BeNull();

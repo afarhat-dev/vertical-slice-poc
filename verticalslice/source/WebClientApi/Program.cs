@@ -53,7 +53,6 @@ builder.Services.AddScoped<IValidator<AddCommand>, AddMovie.Validator>();
 builder.Services.AddScoped<IValidator<UpdateCommand>, UpdateMovie.Validator>();
 builder.Services.AddScoped<IValidator<CreateRental.CreateRentalCommand>, CreateRental.Validator>();
 builder.Services.AddScoped<IValidator<ReturnRental.Command>, ReturnRental.Validator>();
-builder.Services.AddScoped<IValidator<DeleteMovie.Command>, DeleteMovie.Validator>();
 
 builder.Services.AddControllers();
 
