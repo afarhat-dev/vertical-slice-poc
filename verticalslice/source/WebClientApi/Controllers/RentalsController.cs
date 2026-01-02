@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebClientApi.Contracts;
+using WebClientApi.Filters;
 using MovieLibrary.Features.Rentals;
 using static MovieLibrary.Features.Rentals.CreateRental;
 using static MovieLibrary.Features.Rentals.ReturnRental;
@@ -10,6 +11,7 @@ namespace WebClientApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EncryptedApi]
 public class RentalsController : ControllerBase
 {
     private readonly CreateRental.Handler _createRentalHandler;

@@ -2,6 +2,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebClientApi.Contracts;
+using WebClientApi.Filters;
 using MovieLibrary.Features.Movies;
 using static MovieLibrary.Features.Movies.AddMovie;
 using static MovieLibrary.Features.Movies.DeleteMovie;
@@ -12,6 +13,7 @@ namespace WebClientApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EncryptedApi]
 public partial class MoviesController : ControllerBase
 {
     private readonly AddMovie.Handler _addMovieHandler;

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 using WebClientApi.Middleware;
+using WebClientApi.Services;
 using MovieLibrary.Data;
 using MovieLibrary.Features.Movies;
 using MovieLibrary.Features.Rentals;
@@ -35,6 +36,9 @@ builder.Services.AddDbContext<MovieDbContext>(options =>
 // Add Repositories
 builder.Services.AddScoped<IMovieRepository, MovieRepository>();
 builder.Services.AddScoped<IRentalRepository, RentalRepository>();
+
+// Add Encryption Service
+builder.Services.AddSingleton<IEncryptionService, AesEncryptionService>();
 
 // Register all handlers
 builder.Services.AddScoped<AddMovie.Handler>();
